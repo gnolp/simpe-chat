@@ -1,0 +1,93 @@
+@Service
+public class ChatService {
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
+    @Autowired
+    private MessageRepository messageRepository; // Repository để lưu trữ tin nhắn
+
+    public void sendPrivateMessage(MessageDTO message, String senderId, String receiverId) {
+        Long chatId = findChat(receiverId); // Tìm chat ID
+
+        // Lưu tin nhắn vào database
+        saveMessage(message, chatId);
+
+        // Gửi tin nhắn đến người nhận và người gửi
+        messagingTemplate.convertAndSendToUser(receiverId, "/queue/chat-" + chatId, message);
+        messagingTemplate.convertAndSendToUser(senderId, "/queue/chat-" + chatId, message);
+    }
+
+    public void sendGroupMessage(MessageDTO message) {
+        Long chatId = message.getChatId();
+
+        // Lưu tin nhắn vào database
+        saveMessage(message, chatId);
+
+        // Gửi tin nhắn đến tất cả thành viên trong nhóm
+        messagingTemplate.convertAndSend("/topic/group-" + chatId, message);
+    }
+
+    private void saveMessage(MessageDTO message, Long chatId) {
+        MessageEntity entity = new MessageEntity(message, chatId);
+        messageRepository.save(entity); // Lưu entity vào database
+    }
+
+    private Long findChat(Long receiverId) {
+        // Logic tìm chat ID dựa vào người nhận
+        return chatRepository.findChatByReceiverId(receiverId);
+    }
+}
+
+
+@Controller
+public class ChatController {
+    @Autowired
+    private ChatService chatService;
+
+    @MessageMapping("/send-private")
+    public void sendPrivateMessage(@Payload MessageDTO message, Principal principal) {
+        String senderId = principal.getName(); // Lấy ID của người gửi
+        String receiverId = message.getReceiverId().toString(); // ID người nhận
+
+        chatService.sendPrivateMessage(message, senderId, receiverId);
+    }
+
+    @MessageMapping("/send-group")
+    public void sendGroupMessage(@Payload MessageDTO message) {
+        chatService.sendGroupMessage(message);
+    }
+}
+
+có thể không gửi lại cho người nhận, thay vào đó sẽ gọi hàm show tin nhắn để có thể hiển thị ngay lập tức
+function sendMessage() {
+    var message = {
+        from: "user1",
+        content: "Hello!",
+        timestamp: new Date().toISOString()
+    };
+
+    // Hiển thị tin nhắn ngay trên giao diện
+    showMessage(message);
+
+    // Gửi tin nhắn lên server
+    stompClient.send("/app/sendMessage", {}, JSON.stringify(message));
+}
+
+
+stompClient.onConnect = function () {
+    let chatIds = [123, 456, 789]; // Danh sách chatId của user
+
+    chatIds.forEach(chatId => {
+        // Lắng nghe tin nhắn riêng (1-1)
+        stompClient.subscribe(`/user/queue/chat-${chatId}`, function (message) {
+            let data = JSON.parse(message.body);
+            console.log("Nhận tin nhắn riêng:", data);
+        });
+
+        // Lắng nghe tin nhắn nhóm
+        stompClient.subscribe(`/topic/group-${chatId}`, function (message) {
+            let data = JSON.parse(message.body);
+            console.log("Nhận tin nhắn nhóm:", data);
+        });
+    });
+};

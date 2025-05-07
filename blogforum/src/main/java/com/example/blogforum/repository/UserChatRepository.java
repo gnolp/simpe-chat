@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.example.blogforum.model.Chat;
 import com.example.blogforum.model.User;
 import com.example.blogforum.model.UserChat;
 
@@ -22,4 +23,18 @@ public interface UserChatRepository extends JpaRepository<UserChat, Long> {
     	    JOIN UserChat uc2 ON uc2.chat = c AND uc2.user.id = :receiverId
     	""")
 	Optional<Long> findChatIdBySenderIdAndReceiverId(@Param("senderId") Long senderId, @Param("receiverId") Long receiverId);
+    @Query("""
+    	    SELECT CASE WHEN COUNT(uc) > 0 THEN true ELSE false END
+    	    FROM UserChat uc
+    	    WHERE uc.chat = :chat AND uc.user = :user
+    	    """)
+    	boolean UserInChat(@Param("chat") Chat chat, @Param("user") User user);
+    @Query("""
+    		SELECT uc.role
+    		FROM UserChat uc WHERE uc.chat = :chat AND uc.user = :user
+    		""")
+	String getRole(@Param("chat")Chat chat,@Param("user") User user);
+	void deleteByChatAndUser(Chat chat, User user);
+	Optional<UserChat> findByChatAndUser(Chat chat, User user);
+
 }

@@ -5,6 +5,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -14,6 +17,7 @@ import com.example.blogforum.DTO.ApiResponse;
 import com.example.blogforum.DTO.ChatDTO;
 import com.example.blogforum.DTO.MessageDTO;
 import com.example.blogforum.DTO.UserDTO;
+import com.example.blogforum.exception.NotFoundException;
 import com.example.blogforum.model.Chat;
 import com.example.blogforum.model.ChatType;
 import com.example.blogforum.model.Message;
@@ -39,9 +43,10 @@ public class ChatService {
 	private final UserMessageRepository userMsgRepository;
 	private final SimpMessagingTemplate messagingTemplate;
 	private final HelperService helperService;
-	public List<ChatDTO> getChatsByUserId(Long userId) {
-        List<Chat> chats = chatRepository.findByUserId(userId);
-        
+	public List<ChatDTO> getChatsByUserId(Long userId, int page) {
+		Pageable pageable = PageRequest.of(page,8);
+		User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found!"));
+		Page<Chat> chats = chatRepository.findByUser(user,pageable);
         return chats.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 	public List<Chat> getChatsByUserIdNoDTO(Long userId){
@@ -186,5 +191,17 @@ public class ChatService {
             userChatRepository.save(userChat);
 		}
 		return ResponseEntity.ok(new ApiResponse(true,"Tạo cuộc trò chuyện thành công!"));
+	}
+	public boolean isIn(Long chatId) {
+		Long currentId = helperService.getCurrentUserId();
+		Chat chat = chatRepository.findById(chatId).get();
+		User user = userRepository.findById(currentId).get();
+		return userChatRepository.UserInChat(chat, user);
+	}
+	public void changeImage(Long chatId, String url) {
+	    Chat chat = chatRepository.findById(chatId)
+	                 .orElseThrow(() -> new NotFoundException("Chat not found"));
+	    chat.setImage(url);
+	    chatRepository.save(chat);
 	}
 }

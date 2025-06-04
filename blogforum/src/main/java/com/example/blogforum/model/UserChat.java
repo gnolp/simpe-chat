@@ -4,6 +4,8 @@ import java.time.LocalDate;
 
 import org.hibernate.annotations.CreationTimestamp;
 
+import com.example.blogforum.model.Enum.Role;
+
 import jakarta.persistence.*;
 import lombok.*;
 

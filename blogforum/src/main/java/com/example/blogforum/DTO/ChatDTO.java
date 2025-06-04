@@ -2,6 +2,8 @@ package com.example.blogforum.DTO;
 
 import java.util.List;
 
+import com.example.blogforum.model.Enum.Status;
+
 import lombok.*;
 
 @Getter
@@ -15,4 +17,6 @@ public class ChatDTO {
     private String image;
     private List<UserDTO> users;
     private List<MessageDTO> messages;
+    private Status status;
+    private int unreadCount;
 }

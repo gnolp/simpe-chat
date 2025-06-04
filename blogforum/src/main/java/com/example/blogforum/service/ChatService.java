@@ -19,12 +19,12 @@ import com.example.blogforum.DTO.MessageDTO;
 import com.example.blogforum.DTO.UserDTO;
 import com.example.blogforum.exception.NotFoundException;
 import com.example.blogforum.model.Chat;
-import com.example.blogforum.model.ChatType;
 import com.example.blogforum.model.Message;
-import com.example.blogforum.model.Role;
 import com.example.blogforum.model.User;
 import com.example.blogforum.model.UserChat;
 import com.example.blogforum.model.UserMessage;
+import com.example.blogforum.model.Enum.ChatType;
+import com.example.blogforum.model.Enum.Role;
 import com.example.blogforum.repository.ChatRepository;
 import com.example.blogforum.repository.MessageRepository;
 import com.example.blogforum.repository.UserChatRepository;
@@ -33,7 +33,7 @@ import com.example.blogforum.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
-@Service
+@Service("chatService")
 @RequiredArgsConstructor
 public class ChatService {
 	private final ChatRepository chatRepository;
@@ -57,8 +57,8 @@ public class ChatService {
     	Long chat_id = chat.getId();
     	
     	List<User> users = userChatRepository.findAllUserByChatId(chat_id);
+    	Long a = helperService.getCurrentUserId();
     	if(chat.getType() == ChatType.Private) {
-    		Long a = helperService.getCurrentUserId();
     		for(User u:users) {
     			if(u.getId()!=a) {
     				chat.setName(u.getName());
@@ -83,22 +83,23 @@ public class ChatService {
                 		.id(user.getId())
                 		.image(user.getImage())
                 		.name(user.getName())     
-	                    .email(user.getEmail())    
-	                    .role(user.getRole())
-	                    .dob(user.getDob())
+	                    //.email(user.getEmail())    
+	                    //.role(user.getRole())
+	                    //.dob(user.getDob())
 	                    .build()
                 		)
                 .collect(Collectors.toList());
 
         List<MessageDTO> messageDTOs = new ArrayList<>();
         messageDTOs.add(messageService.getNewestMessage(chat.getId()));
-        
+        int unread = messageService.getUnreadMessage(chat.getId(), a);
         return ChatDTO.builder()
         		.id(chat.getId())
         		.name(chat.getName())
         		.image(chat.getImage())
         		.users(userDTOs)
         		.messages(messageDTOs)
+        		.unreadCount(unread)
         		.build();
     }
     public void findOrCreateChat(Long senderId,Long receiverId) {
@@ -194,6 +195,7 @@ public class ChatService {
 	}
 	public boolean isIn(Long chatId) {
 		Long currentId = helperService.getCurrentUserId();
+		System.out.println("đây là .................." + currentId);
 		Chat chat = chatRepository.findById(chatId).get();
 		User user = userRepository.findById(currentId).get();
 		return userChatRepository.UserInChat(chat, user);

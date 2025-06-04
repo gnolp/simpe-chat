@@ -24,4 +24,12 @@ public interface MessageRepository extends JpaRepository<Message,Long> {
 ///đang sử dụng mssql nên dùng top1
 	Message findLatestMessageByChatId(@Param("chatId") Long chatId);
 	Page<Message> findByChatIdOrderBySendAtDesc(Long chatId, Pageable pageable);
+	@Query("""
+		    SELECT COUNT(msg)
+		    FROM Message msg
+		    JOIN msg.chat c
+		    JOIN msg.UserMessage um
+		    WHERE um.user.id = :userId AND c.id = :chatId AND um.status = false
+		    """)
+	int countUnreadMsgByChatId(@Param("chatId") Long chatId, @Param("userId") Long userId);
 }

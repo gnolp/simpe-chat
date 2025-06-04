@@ -2,7 +2,7 @@ package com.example.blogforum.DTO;
 
 import java.time.LocalDateTime;
 
-import com.example.blogforum.model.MessageType;
+import com.example.blogforum.model.Enum.MessageType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import lombok.*;

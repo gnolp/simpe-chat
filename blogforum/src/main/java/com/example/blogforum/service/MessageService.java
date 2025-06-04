@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.blogforum.repository.ChatRepository;
 import com.example.blogforum.repository.MessageRepository;
+import com.example.blogforum.repository.UserMessageRepository;
 import com.example.blogforum.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -22,8 +23,8 @@ import com.example.blogforum.DTO.MessageDTO;
 import com.example.blogforum.DTO.UserDTO;
 import com.example.blogforum.model.Chat;
 import com.example.blogforum.model.Message;
-import com.example.blogforum.model.MessageType;
 import com.example.blogforum.model.User;
+import com.example.blogforum.model.Enum.MessageType;
 @Service
 @RequiredArgsConstructor
 public class MessageService {
@@ -31,6 +32,7 @@ public class MessageService {
 	private final ChatRepository chatRepository;
 	private final HelperService helperService;
 	private final UserRepository userRepository;
+	private final UserMessageRepository userMessageRepository;
 	public Message save(MessageDTO message, Chat chat) {
 		Message msg = new Message();
 		msg.setChat(chat);
@@ -50,9 +52,9 @@ public class MessageService {
 	        .id(sender.getId())
 	        .image(sender.getImage())
 	        .name(sender.getName())
-	        .email(sender.getEmail())
-	        .role(sender.getRole())
-	        .dob(sender.getDob())
+	        //.email(sender.getEmail())
+	        //.role(sender.getRole())
+	        //.dob(sender.getDob())
 	        .build();
 	    
 	    return MessageDTO.builder()
@@ -62,10 +64,10 @@ public class MessageService {
 	        .type(a.getType())
 	        .build();
 	}
-	public ResponseEntity<List<MessageDTO>> getMessByChatId(Long chatId, int page) {
+	public ResponseEntity<List<MessageDTO>> getMessByChatId(Long chatId, int page, Long userId) {
 	    Pageable pageable = PageRequest.of(page, 25); // mỗi trang 25 tin nhắn
 	    Page<Message> messagePage = messageRepository.findByChatIdOrderBySendAtDesc(chatId, pageable);
-
+	    userMessageRepository.markAsSeen(userId, chatId);
 	    List<MessageDTO> dtoList = messagePage.getContent().stream()
 	            .map(this::convertDTO)
 	            .toList();
@@ -77,9 +79,9 @@ public class MessageService {
 	        .id(sender.getId())
 	        .image(sender.getImage())
 	        .name(sender.getName())
-	        .email(sender.getEmail())
-	        .role(sender.getRole())
-	        .dob(sender.getDob())
+	        //.email(sender.getEmail())
+	        //.role(sender.getRole())
+	        //.dob(sender.getDob())
 	        .build();
 	    return MessageDTO.builder()
 	    		.Content(message.getContent())
@@ -99,9 +101,9 @@ public class MessageService {
 		        .id(sender.getId())
 		        .image(sender.getImage())
 		        .name(sender.getName())
-		        .email(sender.getEmail())
-		        .role(sender.getRole())
-		        .dob(sender.getDob())
+		        //.email(sender.getEmail())
+		        //.role(sender.getRole())
+		        //.dob(sender.getDob())
 		        .build();
 		msg.setSender(senderDTO);
 		if(message.containsKey("content")) {
@@ -117,5 +119,9 @@ public class MessageService {
 		}
 		if(check) return msg;
 		return null;
+	}
+
+	public int getUnreadMessage(Long id, Long userId) {
+		return messageRepository.countUnreadMsgByChatId(id,userId);
 	}
 }

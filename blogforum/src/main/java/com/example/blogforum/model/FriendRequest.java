@@ -2,6 +2,8 @@ package com.example.blogforum.model;
 
 import java.time.LocalDate;
 
+import com.example.blogforum.model.Enum.FriendRequestStatus;
+
 import jakarta.persistence.*;
 import lombok.*;
 

@@ -16,7 +16,7 @@ import com.example.blogforum.DTO.ApiResponse;
 import com.example.blogforum.DTO.UserDTO;
 import com.example.blogforum.model.FriendRequest;
 import com.example.blogforum.model.User;
-import com.example.blogforum.model.FriendRequestStatus ;
+import com.example.blogforum.model.Enum.FriendRequestStatus;
 import com.example.blogforum.repository.FriendRequestRepository;
 import com.example.blogforum.repository.UserRepository;
 import com.example.blogforum.security.UserPrincipal;

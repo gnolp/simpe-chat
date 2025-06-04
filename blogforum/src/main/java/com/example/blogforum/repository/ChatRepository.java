@@ -25,5 +25,9 @@ public interface ChatRepository extends JpaRepository<Chat,Long>{
 		""")
 	List<Chat> findByUserId(@Param("userId") Long userId);
 	Optional<Chat> findById(Long id);
-	Page<Chat> findByUser(User user, Pageable pageable);
+	@Query("""
+		    SELECT uc.chat FROM UserChat uc
+		    WHERE uc.user = :user
+		""")
+	Page<Chat> findByUser(@Param("user") User user, Pageable pageable);
 }

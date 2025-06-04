@@ -10,7 +10,7 @@ const chatData = [
         lastMessage: "Thành thật thà: Đm mày hôm k",
         lastMessageTime: "1 giờ",
         messages: [
-            { text: "Thành thật thà: Đm mày hôm k", sender: "them", time: "12:30" },
+            { text: "Thành thật thà: xxxx", sender: "them", time: "12:30" },
             { text: "Chắc mai đi được", sender: "me", time: "12:35" }
         ]
     },

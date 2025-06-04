@@ -96,12 +96,13 @@ public class ChatController {
 	    return ResponseEntity.ok(chats);
 	}
 	@GetMapping("/get-message-of-chat/{chatId}")
+	@PreAuthorize("@chatService.isIn(#chatId)")
 	public ResponseEntity<List<MessageDTO>> getMsg(
 	        @PathVariable Long chatId,
 	        @RequestParam(defaultValue = "0") int page // lấy page từ query param
 	) {
 		System.out.println("hello?");
-	    return messageService.getMessByChatId(chatId, page);
+	    return messageService.getMessByChatId(chatId, page,helperService.getCurrentUserId());
 	}
 	@PutMapping("/create-group-chat")
 	public ResponseEntity<?> creatGroupChat(@RequestBody List<Long> memberId){
@@ -109,7 +110,7 @@ public class ChatController {
 		return chatService.createGroupChat(userId, memberId);
 	}
 	
-	@PutMapping
+	@PutMapping("/change-image-of-group/{chatId}")
 	@PreAuthorize("@chatService.isIn(#chatId)")
 	public ResponseEntity<?> changeImageGroup(@PathVariable Long chatId, MultipartFile file){
 		String url;
@@ -121,20 +122,20 @@ public class ChatController {
 		chatService.changeImage(chatId, url);
 		return ResponseEntity.ok(new ApiResponse(true,"Done!"));
 	}
-	@DeleteMapping
+	@DeleteMapping("/delete-user-of-chat/{chatId}")
 	@PreAuthorize("@userChatService.role(#chatId).equals('admin')")
 	public ResponseEntity<?> deleteUserFromChat(@PathVariable Long chatId, @RequestParam Long userId){
 		userChatService.deleteUserFromChat(chatId,userId);
 		return ResponseEntity.ok(new ApiResponse(true,"done"));
 	}
-	@DeleteMapping
+	@PutMapping("/add-user-into-chat/{chatId}")
 	@PreAuthorize("@userChatService.role(#chatId).equals('admin')")
 	public ResponseEntity<?> addUserIntoChat(@PathVariable Long chatId, @RequestParam Long userId){
 		userChatService.addUserFromChat(chatId,userId);
 		return ResponseEntity.ok(new ApiResponse(true,"done"));
 	}
 	
-	@PatchMapping
+	@PatchMapping("change-name-of-chat/{chatId}")
 	@PreAuthorize("@chatService.isIn(#chatId)")
 	public ResponseEntity<?> changeNameInChat(@PathVariable Long chatId, @RequestBody Map<Long,String> user_name){
 		userChatService.changeNameInChat(chatId,Long.parseLong(user_name.get("id")),user_name.get("name"));

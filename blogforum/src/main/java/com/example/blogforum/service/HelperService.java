@@ -18,15 +18,19 @@ import lombok.RequiredArgsConstructor;
 public class HelperService {
 	private final UserRepository userRepository;
 	public Long getCurrentUserId() {
-		System.out.println("Authentication: " + SecurityContextHolder.getContext().getAuthentication());
+		
 	    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-	    
+//	    System.out.println("Authentication: " + authentication);
+//	    System.out.println("Is Authenticated: " + authentication.isAuthenticated());
+//	    System.out.println("Principal class: " + authentication.getPrincipal().getClass());
+//	    System.out.println("Principal: " + authentication.getPrincipal());
 	    if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal().equals("anonymousUser")) {
 	        return null;
 	    }
 
 	    if (authentication.getPrincipal() instanceof UserPrincipal) {
 	        UserPrincipal currentUser = (UserPrincipal) authentication.getPrincipal();
+	        System.out.println("User ID: " + currentUser.getUserId());
 	        return currentUser.getUserId();
 	    }
 	    
